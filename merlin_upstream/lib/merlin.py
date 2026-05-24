@@ -3,6 +3,7 @@ from lib.consolidate import encode_weights
 from lib.recall import recall
 from lib.config import cfg
 from lib.utils import log, compute_forgetting, confusion_matrix
+from lib.dataset.mnist_variations import MNIST
 
 import statistics
 import os
@@ -32,6 +33,20 @@ def learn_continually():
     result_val_t = []   # task ID at each evaluation point  (mirrors train_versa_cosfan.py)
     result_val_a = []   # per-task accuracy vector at each evaluation point
 
+    # Pre-load every training task and compute one sample permutation per task,
+    # seeded by cfg.data_seed (analogous to La-MAML task_incremental_loader).
+    # Test tasks are NOT permuted; permutations are only used to split train data
+    # into disjoint subsets for each ensemble model.
+    log('Pre-loading training tasks and computing sample permutations (data_seed=%d).' % cfg.data_seed)
+    perm_gen = torch.Generator()
+    perm_gen.manual_seed(cfg.data_seed)
+    all_train_datasets = {}
+    sample_permutations = {}
+    for t in eval_tasks:
+        ds = MNIST('./data', task=t, mode='Train', transform=None)
+        sample_permutations[t] = torch.randperm(len(ds), generator=perm_gen)
+        all_train_datasets[t] = ds
+
     baseline_model = getattr(models.classifiers, cfg.model)().to(cfg.device)
     baseline = [test(baseline_model, [task], verbose=False, mode='Test') for task in eval_tasks]
     all_rows.append(torch.tensor(baseline, dtype=torch.float32))
@@ -42,7 +57,7 @@ def learn_continually():
 
         # Train multiple models for a task.
         for model_id in range(cfg.n_models):
-            train_a_task(task, model_id)
+            train_a_task(task, model_id, all_train_datasets[task], sample_permutations[task])
 
         # Incrementally consolidate the model.
         encode_weights(task, observed_tasks)

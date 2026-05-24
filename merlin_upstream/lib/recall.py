@@ -43,7 +43,7 @@ def _get_test_support_query_split(task):
     n_total = len(test_data)
     n_support = min(cfg.continual.validation_samples_per_task, n_total // 2)
     gen = torch.Generator()
-    gen.manual_seed(cfg.seed * 10007 + task * 999983)
+    gen.manual_seed(cfg.data_seed * 10007 + task * 999983)
     perm = torch.randperm(n_total, generator=gen)
     support_ds = Subset(test_data, perm[:n_support].tolist())
     query_ds = Subset(test_data, perm[n_support:].tolist())

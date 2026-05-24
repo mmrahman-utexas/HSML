@@ -8,7 +8,7 @@ model: 'SimpleNet_FC_100'
 # Base-model Training Dynamics
 n_models: 10
 epochs: 1
-within_batch_update_count: 20
+within_batch_update_count: 1
 learning_rate: 0.005
 momentum: 0.9
 weight_decay: 0.001

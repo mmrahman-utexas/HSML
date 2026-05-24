@@ -10,10 +10,14 @@ from torch.utils.data import DataLoader
 import torch.nn.functional as F
 
 
-def train_a_task(task, model_id):
+def train_a_task(task, model_id, train_data_full, perm):
     """
-    Define the model, load the dataset, train the model on it.
-    :return:
+    Train one ensemble model (model_id) for a given task on its assigned data subset.
+
+    :param train_data_full: Pre-loaded training dataset for this task (MNIST instance).
+    :param perm: Pre-computed random permutation (1-D LongTensor) over the training
+                 indices, seeded by cfg.data_seed.  Each model_id receives a disjoint
+                 contiguous slice of this permutation so there is no sample overlap.
     """
     # Model
     model = getattr(models.classifiers, cfg.model)().to(cfg.device)
@@ -25,14 +29,10 @@ def train_a_task(task, model_id):
     else:
         model.load_state_dict(torch.load(save_location))
 
-    # Data - partition the full training set into cfg.n_models non-overlapping subsets
-    # using a deterministic random permutation seeded by (cfg.seed, task).
-    # Each ensemble model (model_id) trains on its own distinct subset.
-    train_data_full = MNIST('./data', task=task, mode='Train', transform=None)
+    # Data - use the pre-loaded dataset and the pre-computed permutation.
+    # Divide the permuted indices into cfg.n_models disjoint slices; this model
+    # gets slice model_id (no sampling with replacement, no overlap between models).
     n_total = len(train_data_full)
-    gen = torch.Generator()
-    gen.manual_seed(cfg.seed * 10007 + task * 997)
-    perm = torch.randperm(n_total, generator=gen)
     n_per_model = max(1, n_total // cfg.n_models)
     start = model_id * n_per_model
     end = (model_id + 1) * n_per_model if model_id < cfg.n_models - 1 else n_total

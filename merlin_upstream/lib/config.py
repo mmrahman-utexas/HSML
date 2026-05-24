@@ -22,6 +22,7 @@ root.verbose = False
 root.device = None
 
 root.seed = 180
+root.data_seed = 0   # controls training-subset permutations (mirrors La-MAML data_seed)
 
 root.model = 'ResNet32'
 
