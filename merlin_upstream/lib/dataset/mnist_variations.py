@@ -56,6 +56,9 @@ class MNIST(data.Dataset):
                 self.create_permuted_mnist(path, save_location)
                 cfg.continual.rebuild_dataset = False
             variation_data = torch.load(save_location)
+            # Accept any tensor dtype (uint8 from raw MNIST or float32 pre-normalised).
+            if isinstance(variation_data[0][0][0], torch.Tensor):
+                self.use_local_tensor_data = True
         elif cfg.continual.task == 'rotated_mnist':
             if cfg.continual.data_root:
                 variation_data = self.load_local_rotated_mnist(cfg.continual.data_root)
@@ -111,9 +114,13 @@ class MNIST(data.Dataset):
         if self.use_local_tensor_data:
             if isinstance(img, np.ndarray):
                 img = torch.from_numpy(img)
+            # Normalise uint8 pixel values [0, 255] → [0.0, 1.0] before converting to float.
+            normalize = img.dtype == torch.uint8
             if img.dim() == 2:
                 img = img.unsqueeze(0)
             img = img.float()
+            if normalize:
+                img = img / 255.0
         else:
             img = Image.fromarray(img.numpy(), mode='L')
 

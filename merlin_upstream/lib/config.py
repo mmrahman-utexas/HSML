@@ -144,6 +144,13 @@ def _merge_a_into_b(a, b):
             b[k] = v
 
 
+def _dict_to_edict(d):
+    """Recursively convert plain dicts to edict."""
+    if isinstance(d, dict):
+        return edict({k: _dict_to_edict(v) for k, v in d.items()})
+    return d
+
+
 def cfg_from_file(filename):
     """
     Load a config file and merge it into the default options.
@@ -151,7 +158,7 @@ def cfg_from_file(filename):
     try:
         import yaml
         with open(filename, 'r') as f:
-            yaml_cfg = edict(yaml.load(f))
+            yaml_cfg = _dict_to_edict(yaml.load(f, Loader=yaml.SafeLoader))
     except ImportError:
         yaml_cfg = _mini_yaml_load(filename)
 

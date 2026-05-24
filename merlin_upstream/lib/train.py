@@ -25,8 +25,18 @@ def train_a_task(task, model_id):
     else:
         model.load_state_dict(torch.load(save_location))
 
-    # Data
-    train_data = MNIST('./data', task=task, mode='Train', transform=None)
+    # Data - partition the full training set into cfg.n_models non-overlapping subsets
+    # using a deterministic random permutation seeded by (cfg.seed, task).
+    # Each ensemble model (model_id) trains on its own distinct subset.
+    train_data_full = MNIST('./data', task=task, mode='Train', transform=None)
+    n_total = len(train_data_full)
+    gen = torch.Generator()
+    gen.manual_seed(cfg.seed * 10007 + task * 997)
+    perm = torch.randperm(n_total, generator=gen)
+    n_per_model = max(1, n_total // cfg.n_models)
+    start = model_id * n_per_model
+    end = (model_id + 1) * n_per_model if model_id < cfg.n_models - 1 else n_total
+    train_data = torch.utils.data.Subset(train_data_full, perm[start:end].tolist())
 
     train_dataloader = DataLoader(train_data, batch_size=cfg.batch_size_train, shuffle=True)
 

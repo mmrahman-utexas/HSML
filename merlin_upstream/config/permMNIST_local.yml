@@ -1,0 +1,66 @@
+# General Configurations
+run_label: 'permMNIST_local'
+gpu_ids: '4'
+verbose: False
+seed: 20
+model: 'SimpleNet_FC_100'
+
+# Base-model Training Dynamics
+n_models: 10
+epochs: 1
+within_batch_update_count: 20
+learning_rate: 0.005
+momentum: 0.9
+weight_decay: 0.001
+batch_size_train: 128
+batch_size_test: 128
+
+# Continual Learning parameters
+continual:
+  task: 'permuted_mnist'
+  rebuild_dataset: False
+  shuffle_task: False
+  shuffle_datapoints: False
+  n_tasks: 20
+  samples_per_task: 6000
+  validation_samples_per_task: 1000
+  task_order: [18, 1, 19, 8, 10, 17, 6, 13, 4, 2, 5, 14, 9, 7, 16, 11, 3, 0, 15, 12]
+  method:
+    run_merlin: True
+  epochs: 1
+  n_finetune_epochs: 40
+  learning_rate: 0.001
+  batch_size_train: 10
+  batch_size_test: 128
+  finetune_learning_rate: 0.001
+
+# Meta-Consolidation
+kernels:
+  encoder: 'vae'
+  latent_dimension: 2
+  epochs: 25
+  learning_rate: 0.0001
+  batch_size: 1
+  dataset_path: ''
+  rebuild_dataset_pickle: True
+  point_estimate: False
+  intermediate_test: False
+  ensembling:
+    min_clf_accuracy: 0
+    max_num_of_models: 10
+  gamma: 0.0
+  n_pseudo_weights: 10
+  n_finetune_src_models: 1
+  use_classification_loss: False
+  use_reconstruction_loss: True
+  chunking:
+    enable: True
+    chunk_size: 300
+    hidden_size: 50
+
+# Recall
+recall:
+  model_path: ''
+  batch_size: 128
+  use_generated_weights: True
+  cumulative_prior: True
