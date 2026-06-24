@@ -1,8 +1,8 @@
 # General Configurations
-run_label: 'permMNIST_local'
-gpu_ids: '4'
+run_label: 'permMNIST_local_seed0'
+gpu_ids: '0'
 verbose: False
-seed: 20
+seed: 0
 model: 'SimpleNet_FC_100'
 
 # Base-model Training Dynamics

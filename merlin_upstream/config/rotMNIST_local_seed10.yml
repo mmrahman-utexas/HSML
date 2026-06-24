@@ -1,19 +1,19 @@
 # General Configurations
-run_label: 'rotMNIST_local_seed10'
-gpu_ids: '0'
+run_label: 'rotMNIST_local_seed0'
+gpu_ids: '2'
 verbose: False
-seed: 10
+seed: 0
 model: 'SimpleNet_FC_100'
 
 # Base-model Training Dynamics
-n_models: 1
+n_models: 10
 epochs: 1
-within_batch_update_count: 20
+within_batch_update_count: 1
 learning_rate: 0.005
 momentum: 0.9
 weight_decay: 0.001
-batch_size_train: 10
-batch_size_test: 1024
+batch_size_train: 128
+batch_size_test: 128
 
 # Continual Learning parameters
 continual:
@@ -27,13 +27,13 @@ continual:
   shuffle_task: False
   shuffle_datapoints: False
   n_tasks: 20
-  samples_per_task: 1000
-  validation_samples_per_task: 100
+  samples_per_task: 6000
+  validation_samples_per_task: 1000
   method:
     run_merlin: True
   epochs: 1
   n_finetune_epochs: 40
-  learning_rate: 0.1
+  learning_rate: 0.001
   batch_size_train: 10
   batch_size_test: 128
   finetune_learning_rate: 0.001
