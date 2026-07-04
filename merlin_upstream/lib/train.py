@@ -32,7 +32,10 @@ def train_a_task(task, model_id, train_data_full, perm):
     # Data - use the pre-loaded dataset and the pre-computed permutation.
     # Divide the permuted indices into cfg.n_models disjoint slices; this model
     # gets slice model_id (no sampling with replacement, no overlap between models).
-    n_total = len(train_data_full)
+    # NOTE: slice offsets are computed from len(perm), not len(train_data_full),
+    # so a partial permutation (e.g. one data-half in the recurring setting) is
+    # split correctly across the ensemble.
+    n_total = len(perm)
     n_per_model = max(1, n_total // cfg.n_models)
     start = model_id * n_per_model
     end = (model_id + 1) * n_per_model if model_id < cfg.n_models - 1 else n_total

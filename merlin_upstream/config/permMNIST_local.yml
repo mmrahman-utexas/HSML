@@ -1,8 +1,8 @@
 # General Configurations
-run_label: 'permMNIST_local_seed0'
+run_label: 'permMNIST_noncum_seed20'
 gpu_ids: '0'
 verbose: False
-seed: 0
+seed: 20
 model: 'SimpleNet_FC_100'
 
 # Base-model Training Dynamics
@@ -63,4 +63,4 @@ recall:
   model_path: ''
   batch_size: 128
   use_generated_weights: True
-  cumulative_prior: True
+  cumulative_prior: False

@@ -1,6 +1,6 @@
 # General Configurations
-run_label: 'rotMNIST_noncum_seed20'
-gpu_ids: '0'
+run_label: 'permMNIST_recurring_noncum_seed20'
+gpu_ids: '3'
 verbose: False
 seed: 20
 model: 'SimpleNet_FC_100'
@@ -17,18 +17,21 @@ batch_size_test: 128
 
 # Continual Learning parameters
 continual:
-  task: 'rotated_mnist'
-  data_root: '/home/sv6234/HSML/data/rotated_mnist'
-  bundle_pkl: 'mnist_all_rotation_normalized_train_valid.pkl'
-  train_pkl: 'train.pkl'
-  test_pkl: 'test.pkl'
-  task_order: [18, 1, 19, 8, 10, 17, 6, 13, 4, 2, 5, 14, 9, 7, 16, 11, 3, 0, 15, 12]
+  task: 'permuted_mnist'
   rebuild_dataset: False
   shuffle_task: False
   shuffle_datapoints: False
   n_tasks: 20
   samples_per_task: 6000
   validation_samples_per_task: 1000
+  # Recurring schedule: 10 distinct tasks, each presented twice (one data-half
+  # per presentation). Order/subset replicate the La-MAML recurring_task_mode
+  # schedule (split-view order [8,28,9,29,...] decoded into [task, split] pairs).
+  recurring:
+    enable: True
+    subset: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+    n_splits: 2
+    order: [[4, 0], [14, 0], [4, 1], [14, 1], [6, 0], [16, 0], [6, 1], [16, 1], [8, 0], [18, 0], [8, 1], [18, 1], [0, 0], [10, 0], [0, 1], [10, 1], [2, 0], [12, 0], [2, 1], [12, 1]]
   method:
     run_merlin: True
   epochs: 1

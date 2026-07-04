@@ -67,4 +67,4 @@ recall:
   model_path: ''
   batch_size: 128
   use_generated_weights: True
-  cumulative_prior: True
+  cumulative_prior: False

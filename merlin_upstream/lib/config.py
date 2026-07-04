@@ -101,6 +101,17 @@ root.continual.learning_rate = 0.001
 root.continual.batch_size_train = 128
 root.continual.batch_size_test = 128
 
+# Recurring-task schedule (mirrors La-MAML recurring_task_mode).
+# When enabled, a small `subset` of distinct tasks is presented multiple times.
+# Each task's training data is split into `n_splits` disjoint halves and `order`
+# lists the presentation schedule as [task_id, split_id] pairs. Evaluation /
+# consolidation are done over the distinct tasks in `subset`.
+root.continual.recurring = edict()
+root.continual.recurring.enable = False
+root.continual.recurring.subset = []     # distinct original task ids, e.g. [0,2,4,...,18]
+root.continual.recurring.n_splits = 2    # number of disjoint data halves per task
+root.continual.recurring.order = []      # list of [task_id, split_id] presentations
+
 root.continual.method = edict()
 root.continual.method.run_merlin = True
 root.continual.method.run_ewc = False
