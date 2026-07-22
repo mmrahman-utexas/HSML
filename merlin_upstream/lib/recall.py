@@ -140,28 +140,34 @@ def ensemble_and_evaluate(weights, observed_tasks, eval_tasks=None):
     # Pre-compute deterministic support / query splits for every eval task.
     task_splits = {task: _get_test_support_query_split(task) for task in eval_tasks}
 
-    classification_models = []
-    for task, task_weight in enumerate(weights):
+    # weights[i] corresponds to observed_tasks[i] (see get_weights_from_chunked_vae).
+    # Fine-tune each task's recalled weights on that task's own support set and key
+    # the resulting ensemble by real task id, so this works when eval-task ids are
+    # not contiguous 0..n (e.g. the recurring `subset` schedule).
+    models_by_task = {}
+    for i, task_weight in enumerate(weights):
+        task = observed_tasks[i]
+        support_ds, query_ds = task_splits[task]
         classification_models_ensemble = []
-        support_ds = task_splits.get(task, (None, None))[0]
         for weight in task_weight:
             # Fine-tune on the deterministic test-support set for this task.
-            weight_ft = _finetune_on_support(weight, support_ds) if support_ds is not None \
-                else torch.tensor(weight)
-            query_ds = task_splits.get(task, (None, None))[1]
+            weight_ft = _finetune_on_support(weight, support_ds)
             acc, model = _evaluate_on_query(weight_ft, task, query_ds)
             if acc > cfg.kernels.ensembling.min_clf_accuracy:
                 log('[Task: %d] Individual accuracies: %f' % (task, acc))
                 classification_models_ensemble.append(model)
-        classification_models.append(classification_models_ensemble)
+        models_by_task[task] = classification_models_ensemble
 
-    log('Ensembling results from %d tasks.' % len(classification_models))
+    log('Ensembling results from %d tasks.' % len(models_by_task))
 
     accuracies = []
+    last_task = observed_tasks[-1]
     for task in eval_tasks:
-        model_idx = task if task < len(classification_models) else len(classification_models) - 1
+        # Use this task's own ensemble if it has been observed, otherwise fall back
+        # to the last observed task's ensemble (forward-transfer estimate).
+        ensemble = models_by_task.get(task, models_by_task[last_task])
         query_ds = task_splits[task][1]
-        acc = _ensembled_prediction_on_query(task, classification_models[model_idx], query_ds)
+        acc = _ensembled_prediction_on_query(task, ensemble, query_ds)
         accuracies.append(acc)
 
     acc = statistics.mean(accuracies)

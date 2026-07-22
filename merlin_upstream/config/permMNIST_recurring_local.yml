@@ -1,6 +1,6 @@
 # General Configurations
 run_label: 'permMNIST_recurring_noncum_seed20'
-gpu_ids: '3'
+gpu_ids: '4'
 verbose: False
 seed: 20
 model: 'SimpleNet_FC_100'
